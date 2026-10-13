@@ -367,10 +367,10 @@ The worked example of this process is in [MIGRATION_INCIDENT.md](MIGRATION_INCID
 | Checkov | 502 passed, 0 failed, 36 skipped with inline justification |
 | actionlint (+ shellcheck) | Clean |
 
-**Not verified:** a real `terraform apply` into an AWS account, and a run of the GitHub
-Actions workflows. Both need AWS accounts and repository configuration that this exercise
-does not include. The Terraform has been validated, tested offline with a mocked provider
-and security-scanned.
+**Not verified:** a real `terraform apply` into an AWS account. The GitHub Actions CI
+jobs run green on every push; the AWS build and deploy jobs are gated behind the
+`AWS_DEPLOY_ENABLED` repository variable and are skipped until AWS accounts are configured.
+The Terraform has been validated, tested offline with a mocked provider and security-scanned.
 
 ## Limitations and next steps
 
