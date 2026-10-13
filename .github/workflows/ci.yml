@@ -8,10 +8,11 @@
 name: CI
 
 # Pushes to main run these same jobs through deploy.yml (workflow_call), which then
-# builds and deploys only if they pass.
+# builds and deploys only if they pass. workflow_dispatch allows a manual run.
 on:
   pull_request:
   workflow_call:
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -114,8 +115,10 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      # Pinned by commit SHA: trivy-action tags were re-published with a "v" prefix
+      # after a 2026 supply-chain incident; a SHA cannot be moved.
       - name: Scan image (fail on fixable HIGH/CRITICAL)
-        uses: aquasecurity/trivy-action@0.33.1
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           image-ref: orders-api:local
           severity: HIGH,CRITICAL
@@ -123,9 +126,10 @@ jobs:
           exit-code: "1"
           format: table
 
+      # Wait only for the API: the one-shot migrate container exits on purpose.
       - name: Smoke test with docker compose
         run: |
-          docker compose -f docker/docker-compose.yml up -d --no-build --wait --wait-timeout 120
+          docker compose -f docker/docker-compose.yml up -d --no-build --wait --wait-timeout 120 api
           ./scripts/smoke-test.sh http://localhost:8000
 
       - name: Container logs
@@ -178,6 +182,9 @@ jobs:
           framework: terraform
           quiet: true
           soft_fail: false
+          # CKV2_AWS_5 is a graph check that cannot see security groups attached in other
+          # modules (alb, ecs_service, rds) or by the legacy Lambda outside this repo.
+          skip_check: CKV2_AWS_5
 
   secrets:
     name: Secret scan
