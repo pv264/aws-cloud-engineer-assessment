@@ -99,6 +99,9 @@ jobs:
         uses: hadolint/hadolint-action@v3.1.0
         with:
           dockerfile: docker/Dockerfile
+          # DL3006: the base image IS pinned (by digest) via the PYTHON_IMAGE build arg,
+          # which hadolint cannot resolve.
+          ignore: DL3006
 
       - uses: docker/setup-buildx-action@v3
 
