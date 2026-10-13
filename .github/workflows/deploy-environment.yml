@@ -41,7 +41,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - uses: aws-actions/configure-aws-credentials@v5
+      - uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: arn:aws:iam::${{ env.ACCOUNT_ID }}:role/xyzz-orders-gha-plan
           aws-region: ${{ env.AWS_REGION }}
@@ -94,7 +94,7 @@ jobs:
           path: terraform
 
       # ---------------------------- Infrastructure ------------------------------------
-      - uses: aws-actions/configure-aws-credentials@v5
+      - uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: arn:aws:iam::${{ env.ACCOUNT_ID }}:role/xyzz-orders-${{ inputs.environment }}-gha-terraform
           aws-region: ${{ env.AWS_REGION }}
@@ -115,7 +115,7 @@ jobs:
           echo "api_url=$(terraform output -raw api_url)" >> "$GITHUB_OUTPUT"
 
       # ---------------------------- Application ---------------------------------------
-      - uses: aws-actions/configure-aws-credentials@v5
+      - uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: arn:aws:iam::${{ env.ACCOUNT_ID }}:role/xyzz-orders-${{ inputs.environment }}-gha-deploy
           aws-region: ${{ env.AWS_REGION }}

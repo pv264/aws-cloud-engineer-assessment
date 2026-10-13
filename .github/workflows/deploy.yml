@@ -51,7 +51,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - uses: aws-actions/configure-aws-credentials@v5
+      - uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: arn:aws:iam::${{ fromJSON(vars.AWS_ACCOUNT_IDS).tooling }}:role/xyzz-orders-gha-ci
           aws-region: ${{ vars.AWS_REGION }}
