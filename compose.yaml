@@ -1,0 +1,3 @@
+# Lets `docker compose up --build` work from the repository root.
+include:
+  - docker/docker-compose.yml

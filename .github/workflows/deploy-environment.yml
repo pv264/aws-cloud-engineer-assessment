@@ -1,0 +1,207 @@
+# Reusable: deploy one image to one environment.
+#
+#   plan     terraform plan (read-only role), saved as an artifact, shown in the job summary
+#   release  [GitHub environment protection: prod requires reviewers to approve the plan above]
+#            terraform apply <saved plan>          (fails if anything changed since the plan)
+#            register task definition (new image)
+#            run DB migrations as a one-off ECS task (must exit 0)
+#            update the ECS service, wait for the rollout to COMPLETE
+#            smoke test the public endpoint
+#            on failure: roll the service back to the previous task definition
+name: Deploy environment
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+      image:
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  TERRAFORM_VERSION: "1.16.5"
+  AWS_REGION: ${{ vars.AWS_REGION }}
+  ACCOUNT_ID: ${{ fromJSON(vars.AWS_ACCOUNT_IDS)[inputs.environment] }}
+  NAME: xyzz-orders-${{ inputs.environment }}
+
+jobs:
+  plan:
+    name: ${{ inputs.environment }} · terraform plan
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: terraform
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: aws-actions/configure-aws-credentials@v5
+        with:
+          role-to-assume: arn:aws:iam::${{ env.ACCOUNT_ID }}:role/xyzz-orders-gha-plan
+          aws-region: ${{ env.AWS_REGION }}
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+          terraform_wrapper: false
+
+      - name: Plan
+        env:
+          ENVIRONMENT: ${{ inputs.environment }}
+          IMAGE: ${{ inputs.image }}
+        run: |
+          terraform init -input=false -backend-config="environments/${ENVIRONMENT}.s3.tfbackend"
+          terraform plan -input=false -lock-timeout=5m \
+            -var-file="environments/${ENVIRONMENT}.tfvars" \
+            -var="container_image=${IMAGE}" \
+            -out=tfplan
+          {
+            echo "### Terraform plan: ${ENVIRONMENT}"
+            echo '```'
+            terraform show -no-color tfplan | tail -c 60000
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tfplan-${{ inputs.environment }}
+          path: terraform/tfplan
+          retention-days: 1
+
+  release:
+    name: ${{ inputs.environment }} · apply, migrate, deploy
+    needs: plan
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    # Protection rules live on the GitHub environment: prod = required reviewers +
+    # deployments from main only. The OIDC subject (environment:<env>) is what the
+    # terraform/deploy IAM roles trust, so nothing else can assume them.
+    environment:
+      name: ${{ inputs.environment }}
+      url: ${{ steps.apply.outputs.api_url }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: tfplan-${{ inputs.environment }}
+          path: terraform
+
+      # ---------------------------- Infrastructure ------------------------------------
+      - uses: aws-actions/configure-aws-credentials@v5
+        with:
+          role-to-assume: arn:aws:iam::${{ env.ACCOUNT_ID }}:role/xyzz-orders-${{ inputs.environment }}-gha-terraform
+          aws-region: ${{ env.AWS_REGION }}
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+          terraform_wrapper: false
+
+      - name: Terraform apply (exactly the reviewed plan)
+        id: apply
+        working-directory: terraform
+        env:
+          ENVIRONMENT: ${{ inputs.environment }}
+        run: |
+          terraform init -input=false -backend-config="environments/${ENVIRONMENT}.s3.tfbackend"
+          terraform apply -input=false -lock-timeout=5m tfplan
+          echo "api_url=$(terraform output -raw api_url)" >> "$GITHUB_OUTPUT"
+
+      # ---------------------------- Application ---------------------------------------
+      - uses: aws-actions/configure-aws-credentials@v5
+        with:
+          role-to-assume: arn:aws:iam::${{ env.ACCOUNT_ID }}:role/xyzz-orders-${{ inputs.environment }}-gha-deploy
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Register task definition with the new image
+        id: taskdef
+        env:
+          IMAGE: ${{ inputs.image }}
+        run: |
+          previous=$(aws ecs describe-services --cluster "$NAME" --services "$NAME" \
+            --query 'services[0].taskDefinition' --output text)
+          echo "previous=${previous}" >> "$GITHUB_OUTPUT"
+
+          # Start from the latest revision of the family (Terraform owns env vars,
+          # secrets, CPU/memory), swap the image, drop read-only fields.
+          aws ecs describe-task-definition --task-definition "$NAME" --query taskDefinition \
+            | jq --arg image "$IMAGE" '
+                .containerDefinitions |= map(if .name == "app" then .image = $image else . end)
+                | del(.taskDefinitionArn, .revision, .status, .requiresAttributes,
+                      .compatibilities, .registeredAt, .registeredBy, .deregisteredAt)' \
+            > taskdef.json
+          new=$(aws ecs register-task-definition --cli-input-json file://taskdef.json \
+            --query taskDefinition.taskDefinitionArn --output text)
+          echo "new=${new}" >> "$GITHUB_OUTPUT"
+          echo "Previous: ${previous}" >> "$GITHUB_STEP_SUMMARY"
+          echo "New:      ${new}" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Run database migrations (one-off task, same image)
+        env:
+          TASK_DEFINITION: ${{ steps.taskdef.outputs.new }}
+        run: |
+          network=$(aws ecs describe-services --cluster "$NAME" --services "$NAME" \
+            --query 'services[0].networkConfiguration' --output json)
+          task=$(aws ecs run-task --cluster "$NAME" --task-definition "$TASK_DEFINITION" \
+            --capacity-provider-strategy capacityProvider=FARGATE,weight=1 \
+            --network-configuration "$network" \
+            --overrides '{"containerOverrides":[{"name":"app","command":["alembic","upgrade","head"]}]}' \
+            --started-by "github-${GITHUB_RUN_ID}" \
+            --query 'tasks[0].taskArn' --output text)
+          echo "Migration task: ${task}"
+          aws ecs wait tasks-stopped --cluster "$NAME" --tasks "$task"
+          exit_code=$(aws ecs describe-tasks --cluster "$NAME" --tasks "$task" \
+            --query "tasks[0].containers[?name=='app'].exitCode | [0]" --output text)
+          if [ "$exit_code" != "0" ]; then
+            echo "::error::Migration task exited with ${exit_code}; the service was NOT updated."
+            aws logs filter-log-events --log-group-name "/ecs/${NAME}/app" \
+              --log-stream-name-prefix "app/app/${task##*/}" --query 'events[].message' --output text || true
+            exit 1
+          fi
+
+      - name: Deploy to ECS and wait for the rollout
+        id: deploy
+        env:
+          TASK_DEFINITION: ${{ steps.taskdef.outputs.new }}
+        run: |
+          aws ecs update-service --cluster "$NAME" --service "$NAME" \
+            --task-definition "$TASK_DEFINITION" --query 'service.serviceName' --output text
+          # The circuit breaker and the 5xx/latency alarms roll back automatically, after
+          # which the service is "stable" again on the OLD revision. So wait for the
+          # rollout state of the NEW deployment, not just for stability.
+          for _ in $(seq 1 60); do
+            state=$(aws ecs describe-services --cluster "$NAME" --services "$NAME" \
+              --query "services[0].deployments[?taskDefinition=='${TASK_DEFINITION}'].rolloutState | [0]" --output text)
+            echo "rollout: ${state}"
+            case "$state" in
+              COMPLETED) exit 0 ;;
+              FAILED|None) echo "::error::Deployment failed (ECS rolled back automatically)."; exit 1 ;;
+            esac
+            sleep 15
+          done
+          echo "::error::Timed out waiting for the deployment."; exit 1
+
+      - name: Smoke test
+        env:
+          API_URL: ${{ steps.apply.outputs.api_url }}
+          # Production gets read-only checks; synthetic orders are only created below prod.
+          SMOKE_READ_ONLY: ${{ inputs.environment == 'prod' }}
+        run: ./scripts/smoke-test.sh "$API_URL"
+
+      - name: Roll back to the previous task definition
+        if: failure() && steps.deploy.outcome != 'skipped' && steps.taskdef.outputs.previous != ''
+        env:
+          PREVIOUS: ${{ steps.taskdef.outputs.previous }}
+        run: |
+          echo "::warning::Rolling back to ${PREVIOUS}"
+          aws ecs update-service --cluster "$NAME" --service "$NAME" --task-definition "$PREVIOUS" \
+            --query 'service.serviceName' --output text
+          aws ecs wait services-stable --cluster "$NAME" --services "$NAME"
+          echo "Rolled back to ${PREVIOUS}" >> "$GITHUB_STEP_SUMMARY"

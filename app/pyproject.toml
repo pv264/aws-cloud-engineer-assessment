@@ -1,0 +1,34 @@
+[project]
+name = "orders-api"
+version = "1.0.0"
+description = "Order-management API (FastAPI + PostgreSQL) for the XYZZ serverless-to-ECS migration"
+requires-python = ">=3.13"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-ra --strict-markers"
+filterwarnings = [
+    "error",
+    # SQLite has no native DECIMAL; only relevant to the in-memory unit-test database.
+    "ignore:Dialect sqlite\\+pysqlite does \\*not\\* support Decimal objects natively:sqlalchemy.exc.SAWarning",
+]
+
+[tool.coverage.run]
+source = ["orders_api"]
+omit = ["orders_api/__main__.py"]
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 85
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "S", "BLE", "C4", "SIM", "RUF", "PT", "N"]
+ignore = ["S101"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S105", "S106"]

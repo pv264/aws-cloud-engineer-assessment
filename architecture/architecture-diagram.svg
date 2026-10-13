@@ -1,0 +1,251 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1720" height="1130" viewBox="0 0 1720 1130">
+<defs>
+<marker id="req" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#0972D3"/></marker>
+<marker id="req-start" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#0972D3"/></marker>
+<marker id="async" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#E7157B"/></marker>
+<marker id="async-start" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#E7157B"/></marker>
+<marker id="mgmt" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8D99A8"/></marker>
+<marker id="mgmt-start" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8D99A8"/></marker>
+<marker id="db" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#C925D1"/></marker>
+<marker id="db-start" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#C925D1"/></marker>
+</defs>
+<rect width="1720" height="1130" fill="#FFFFFF"/>
+<text x="30" y="40" font-family="Helvetica, Arial, sans-serif" font-size="22" font-weight="bold" fill="#232F3E" text-anchor="start">XYZZ Orders Platform: target architecture (production, us-east-1)</text>
+<text x="30" y="62" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="normal" fill="#5F6B7A" text-anchor="start">Users → Route 53 → AWS WAF → ALB → ECS Fargate (3 AZs) → RDS Proxy → RDS PostgreSQL Multi-AZ; async work stays serverless</text>
+<rect x="30" y="120" width="160" height="64" rx="8" fill="#FFFFFF" stroke="#232F3E" stroke-width="1.6"/>
+<rect x="30" y="120" width="7" height="64" rx="3" fill="#232F3E"/>
+<text x="113.0" y="149.5" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#232F3E" text-anchor="middle">Users / clients</text>
+<text x="113.0" y="164.5" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#5F6B7A" text-anchor="middle">web · mobile · partners</text>
+<rect x="20" y="780" width="190" height="250" rx="10" fill="#F5F6FF" stroke="#3B48CC" stroke-width="2"/>
+<text x="34" y="802" font-family="Helvetica, Arial, sans-serif" font-size="14" font-weight="bold" fill="#3B48CC" text-anchor="start">CI/CD</text>
+<rect x="35" y="815" width="160" height="56" rx="8" fill="#FFFFFF" stroke="#3B48CC" stroke-width="1.6"/>
+<rect x="35" y="815" width="7" height="56" rx="3" fill="#3B48CC"/>
+<text x="118.0" y="840.5" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#232F3E" text-anchor="middle">GitHub Actions</text>
+<text x="118.0" y="855.5" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#5F6B7A" text-anchor="middle">test · build · scan</text>
+<rect x="35" y="885" width="160" height="56" rx="8" fill="#FFFFFF" stroke="#DD344C" stroke-width="1.6"/>
+<rect x="35" y="885" width="7" height="56" rx="3" fill="#DD344C"/>
+<text x="118.0" y="910.5" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#232F3E" text-anchor="middle">OIDC → IAM roles</text>
+<text x="118.0" y="925.5" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#5F6B7A" text-anchor="middle">no long-lived keys</text>
+<rect x="35" y="955" width="160" height="56" rx="8" fill="#FFFFFF" stroke="#3B48CC" stroke-width="1.6"/>
+<rect x="35" y="955" width="7" height="56" rx="3" fill="#3B48CC"/>
+<text x="118.0" y="980.5" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#232F3E" text-anchor="middle">Terraform</text>
+<text x="118.0" y="995.5" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#5F6B7A" text-anchor="middle">S3 state + lock</text>
+<rect x="220" y="90" width="1480" height="1010" rx="10" fill="#FBFBFC" stroke="#232F3E" stroke-width="2"/>
+<text x="234" y="112" font-family="Helvetica, Arial, sans-serif" font-size="14" font-weight="bold" fill="#232F3E" text-anchor="start">AWS Cloud: region us-east-1 (one account per environment)</text>
+<rect x="240" y="130" width="190" height="480" rx="10" fill="#F7F3FF" stroke="#8C4FFF" stroke-width="2" stroke-dasharray="6 4"/>
+<text x="254" y="152" font-family="Helvetica, Arial, sans-serif" font-size="14" font-weight="bold" fill="#8C4FFF" text-anchor="start">Edge</text>
+<rect x="255" y="170" width="160" height="58" rx="8" fill="#FFFFFF" stroke="#8C4FFF" stroke-width="1.6"/>
+<rect x="255" y="170" width="7" height="58" rx="3" fill="#8C4FFF"/>
+<text x="338.0" y="196.5" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#232F3E" text-anchor="middle">Route 53</text>
+<text x="338.0" y="211.5" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#5F6B7A" text-anchor="middle">api.xyzz.com (alias)</text>
+<rect x="255" y="245" width="160" height="58" rx="8" fill="#FFFFFF" stroke="#DD344C" stroke-width="1.6"/>
+<rect x="255" y="245" width="7" height="58" rx="3" fill="#DD344C"/>
+<text x="338.0" y="271.5" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#232F3E" text-anchor="middle">AWS WAF</text>
+<text x="338.0" y="286.5" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#5F6B7A" text-anchor="middle">managed rules · rate limit</text>
+<rect x="255" y="320" width="160" height="58" rx="8" fill="#FFFFFF" stroke="#DD344C" stroke-width="1.6"/>
+<rect x="255" y="320" width="7" height="58" rx="3" fill="#DD344C"/>
+<text x="338.0" y="346.5" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#232F3E" text-anchor="middle">ACM</text>
+<text x="338.0" y="361.5" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#5F6B7A" text-anchor="middle">TLS cert, auto-renew</text>
+<rect x="255" y="395" width="160" height="58" rx="8" fill="#FFFFFF" stroke="#DD344C" stroke-width="1.6"/>
+<rect x="255" y="395" width="7" height="58" rx="3" fill="#DD344C"/>
+<text x="338.0" y="421.5" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#232F3E" text-anchor="middle">Shield Standard</text>
+<text x="338.0" y="436.5" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#5F6B7A" text-anchor="middle">L3/L4 DDoS</text>
+<rect x="255" y="470" width="160" height="70" rx="8" fill="#FFFFFF" stroke="#8C4FFF" stroke-width="1.6"/>
+<rect x="255" y="470" width="7" height="70" rx="3" fill="#8C4FFF"/>
+<text x="338.0" y="495.0" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#232F3E" text-anchor="middle">CloudFront + S3</text>
+<text x="338.0" y="510.0" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#5F6B7A" text-anchor="middle">static assets (OAC)</text>
+<text x="338.0" y="525.0" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#5F6B7A" text-anchor="middle">cacheable GETs</text>
+<rect x="450" y="130" width="900" height="650" rx="10" fill="#FFFFFF" stroke="#8C4FFF" stroke-width="2"/>
+<text x="464" y="152" font-family="Helvetica, Arial, sans-serif" font-size="14" font-weight="bold" fill="#8C4FFF" text-anchor="start">VPC 10.30.0.0/16</text>
+<rect x="815.0" y="108" width="170" height="40" rx="8" fill="#FFFFFF" stroke="#8C4FFF" stroke-width="1.6"/>
+<rect x="815.0" y="108" width="7" height="40" rx="3" fill="#8C4FFF"/>
+<text x="903.0" y="133.0" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#232F3E" text-anchor="middle">Internet Gateway</text>
+<rect x="470" y="166" width="280" height="600" rx="8" fill="none" stroke="#B8C2CC" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="610.0" y="184" font-family="Helvetica, Arial, sans-serif" font-size="12" font-weight="bold" fill="#5F6B7A" text-anchor="middle">Availability Zone us-east-1a</text>
+<rect x="765" y="166" width="280" height="600" rx="8" fill="none" stroke="#B8C2CC" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="905.0" y="184" font-family="Helvetica, Arial, sans-serif" font-size="12" font-weight="bold" fill="#5F6B7A" text-anchor="middle">Availability Zone us-east-1b</text>
+<rect x="1060" y="166" width="280" height="600" rx="8" fill="none" stroke="#B8C2CC" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="1200.0" y="184" font-family="Helvetica, Arial, sans-serif" font-size="12" font-weight="bold" fill="#5F6B7A" text-anchor="middle">Availability Zone us-east-1c</text>
+<rect x="476" y="194" width="268" height="150" rx="6" fill="#EAF7EA" stroke="#7AA116" stroke-width="1" opacity="0.9"/>
+<rect x="771" y="194" width="268" height="150" rx="6" fill="#EAF7EA" stroke="#7AA116" stroke-width="1" opacity="0.9"/>
+<rect x="1066" y="194" width="268" height="150" rx="6" fill="#EAF7EA" stroke="#7AA116" stroke-width="1" opacity="0.9"/>
+<rect x="476" y="356" width="268" height="200" rx="6" fill="#EAF3FC" stroke="#0972D3" stroke-width="1" opacity="0.9"/>
+<rect x="771" y="356" width="268" height="200" rx="6" fill="#EAF3FC" stroke="#0972D3" stroke-width="1" opacity="0.9"/>
+<rect x="1066" y="356" width="268" height="200" rx="6" fill="#EAF3FC" stroke="#0972D3" stroke-width="1" opacity="0.9"/>
+<rect x="476" y="568" width="268" height="196" rx="6" fill="#FBEAFB" stroke="#C925D1" stroke-width="1" opacity="0.9"/>
+<rect x="771" y="568" width="268" height="196" rx="6" fill="#FBEAFB" stroke="#C925D1" stroke-width="1" opacity="0.9"/>
+<rect x="1066" y="568" width="268" height="196" rx="6" fill="#FBEAFB" stroke="#C925D1" stroke-width="1" opacity="0.9"/>
+<rect x="490" y="222" width="830" height="54" rx="8" fill="#FFFFFF" stroke="#8C4FFF" stroke-width="1.6"/>
+<rect x="490" y="222" width="7" height="54" rx="3" fill="#8C4FFF"/>
+<text x="908.0" y="246.5" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#232F3E" text-anchor="middle">Application Load Balancer</text>
+<text x="908.0" y="261.5" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#5F6B7A" text-anchor="middle">HTTPS 443 (TLS 1.3/1.2) · HTTP→301 · least outstanding requests · weighted target groups (migration: Lambda ↔ ECS)</text>
+<rect x="595" y="290" width="140" height="44" rx="8" fill="#FFFFFF" stroke="#8C4FFF" stroke-width="1.6"/>
+<rect x="595" y="290" width="7" height="44" rx="3" fill="#8C4FFF"/>
+<text x="668.0" y="317.0" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#232F3E" text-anchor="middle">NAT gateway</text>
+<rect x="890" y="290" width="140" height="44" rx="8" fill="#FFFFFF" stroke="#8C4FFF" stroke-width="1.6"/>
+<rect x="890" y="290" width="7" height="44" rx="3" fill="#8C4FFF"/>
+<text x="963.0" y="317.0" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#232F3E" text-anchor="middle">NAT gateway</text>
+<rect x="1185" y="290" width="140" height="44" rx="8" fill="#FFFFFF" stroke="#8C4FFF" stroke-width="1.6"/>
+<rect x="1185" y="290" width="7" height="44" rx="3" fill="#8C4FFF"/>
+<text x="1258.0" y="317.0" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#232F3E" text-anchor="middle">NAT gateway</text>
+<rect x="490" y="402" width="115" height="62" rx="8" fill="#FFFFFF" stroke="#ED7100" stroke-width="1.6"/>
+<rect x="490" y="402" width="7" height="62" rx="3" fill="#ED7100"/>
+<text x="550.5" y="423.0" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#232F3E" text-anchor="middle">Task</text>
+<text x="550.5" y="438.0" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#5F6B7A" text-anchor="middle">Orders API</text>
+<text x="550.5" y="453.0" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#5F6B7A" text-anchor="middle">FastAPI</text>
+<rect x="615" y="402" width="115" height="62" rx="8" fill="#FFFFFF" stroke="#ED7100" stroke-width="1.6"/>
+<rect x="615" y="402" width="7" height="62" rx="3" fill="#ED7100"/>
+<text x="675.5" y="423.0" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#232F3E" text-anchor="middle">Task</text>
+<text x="675.5" y="438.0" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#5F6B7A" text-anchor="middle">Orders API</text>
+<text x="675.5" y="453.0" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#5F6B7A" text-anchor="middle">FastAPI</text>
+<rect x="785" y="402" width="115" height="62" rx="8" fill="#FFFFFF" stroke="#ED7100" stroke-width="1.6"/>
+<rect x="785" y="402" width="7" height="62" rx="3" fill="#ED7100"/>
+<text x="845.5" y="423.0" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#232F3E" text-anchor="middle">Task</text>
+<text x="845.5" y="438.0" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#5F6B7A" text-anchor="middle">Orders API</text>
+<text x="845.5" y="453.0" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#5F6B7A" text-anchor="middle">FastAPI</text>
+<rect x="910" y="402" width="115" height="62" rx="8" fill="#FFFFFF" stroke="#ED7100" stroke-width="1.6"/>
+<rect x="910" y="402" width="7" height="62" rx="3" fill="#ED7100"/>
+<text x="970.5" y="423.0" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#232F3E" text-anchor="middle">Task</text>
+<text x="970.5" y="438.0" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#5F6B7A" text-anchor="middle">Orders API</text>
+<text x="970.5" y="453.0" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#5F6B7A" text-anchor="middle">FastAPI</text>
+<rect x="1080" y="402" width="115" height="62" rx="8" fill="#FFFFFF" stroke="#ED7100" stroke-width="1.6"/>
+<rect x="1080" y="402" width="7" height="62" rx="3" fill="#ED7100"/>
+<text x="1140.5" y="423.0" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#232F3E" text-anchor="middle">Task</text>
+<text x="1140.5" y="438.0" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#5F6B7A" text-anchor="middle">Orders API</text>
+<text x="1140.5" y="453.0" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#5F6B7A" text-anchor="middle">FastAPI</text>
+<rect x="1205" y="402" width="115" height="62" rx="8" fill="#FFFFFF" stroke="#ED7100" stroke-width="1.6"/>
+<rect x="1205" y="402" width="7" height="62" rx="3" fill="#ED7100"/>
+<text x="1265.5" y="423.0" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#232F3E" text-anchor="middle">Task</text>
+<text x="1265.5" y="438.0" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#5F6B7A" text-anchor="middle">Orders API</text>
+<text x="1265.5" y="453.0" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#5F6B7A" text-anchor="middle">FastAPI</text>
+<rect x="580" y="476" width="160" height="54" rx="8" fill="#FFFFFF" stroke="#8C4FFF" stroke-width="1.6"/>
+<rect x="580" y="476" width="7" height="54" rx="3" fill="#8C4FFF"/>
+<text x="663.0" y="493.0" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#232F3E" text-anchor="middle">VPC endpoints</text>
+<text x="663.0" y="508.0" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#5F6B7A" text-anchor="middle">ECR · Logs · Secrets</text>
+<text x="663.0" y="523.0" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#5F6B7A" text-anchor="middle">STS · KMS</text>
+<rect x="875" y="476" width="160" height="54" rx="8" fill="#FFFFFF" stroke="#8C4FFF" stroke-width="1.6"/>
+<rect x="875" y="476" width="7" height="54" rx="3" fill="#8C4FFF"/>
+<text x="958.0" y="493.0" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#232F3E" text-anchor="middle">VPC endpoints</text>
+<text x="958.0" y="508.0" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#5F6B7A" text-anchor="middle">ECR · Logs · Secrets</text>
+<text x="958.0" y="523.0" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#5F6B7A" text-anchor="middle">STS · KMS</text>
+<rect x="1170" y="476" width="160" height="54" rx="8" fill="#FFFFFF" stroke="#8C4FFF" stroke-width="1.6"/>
+<rect x="1170" y="476" width="7" height="54" rx="3" fill="#8C4FFF"/>
+<text x="1253.0" y="493.0" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#232F3E" text-anchor="middle">VPC endpoints</text>
+<text x="1253.0" y="508.0" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#5F6B7A" text-anchor="middle">ECR · Logs · Secrets</text>
+<text x="1253.0" y="523.0" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#5F6B7A" text-anchor="middle">STS · KMS</text>
+<rect x="490" y="592" width="830" height="46" rx="8" fill="#FFFFFF" stroke="#C925D1" stroke-width="1.6"/>
+<rect x="490" y="592" width="7" height="46" rx="3" fill="#C925D1"/>
+<text x="908.0" y="612.5" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#232F3E" text-anchor="middle">RDS Proxy</text>
+<text x="908.0" y="627.5" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#5F6B7A" text-anchor="middle">connection pooling + multiplexing · TLS required · IAM/secret auth</text>
+<rect x="505" y="658" width="210" height="76" rx="8" fill="#FFFFFF" stroke="#C925D1" stroke-width="1.6"/>
+<rect x="505" y="658" width="7" height="76" rx="3" fill="#C925D1"/>
+<text x="613.0" y="686.0" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#232F3E" text-anchor="middle">RDS PostgreSQL 17</text>
+<text x="613.0" y="701.0" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#5F6B7A" text-anchor="middle">PRIMARY · KMS · TLS forced</text>
+<text x="613.0" y="716.0" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#5F6B7A" text-anchor="middle">PITR 14 d · Perf. Insights</text>
+<rect x="800" y="658" width="210" height="76" rx="8" fill="#FFFFFF" stroke="#C925D1" stroke-width="1.6"/>
+<rect x="800" y="658" width="7" height="76" rx="3" fill="#C925D1"/>
+<text x="908.0" y="686.0" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#232F3E" text-anchor="middle">RDS PostgreSQL 17</text>
+<text x="908.0" y="701.0" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#5F6B7A" text-anchor="middle">STANDBY (Multi-AZ)</text>
+<text x="908.0" y="716.0" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#5F6B7A" text-anchor="middle">automatic failover</text>
+<rect x="1095" y="658" width="210" height="76" rx="8" fill="#FFFFFF" stroke="#C925D1" stroke-width="1.4" stroke-dasharray="5 4"/>
+<text x="1200" y="690" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#232F3E" text-anchor="middle">Read replica</text>
+<text x="1200" y="708" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#5F6B7A" text-anchor="middle">(added for read scaling)</text>
+<path d="M715,696 L800,696" fill="none" stroke="#C925D1" stroke-width="2.2" stroke-dasharray="6 4" marker-end="url(#db)" marker-start="url(#db-start)"/>
+<text x="757.5" y="688" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="bold" fill="#C925D1" text-anchor="middle">sync</text>
+<path d="M1010,696 L1095,696" fill="none" stroke="#C925D1" stroke-width="2.2" stroke-dasharray="2 4" marker-end="url(#db)"/>
+<text x="1052.5" y="688" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="bold" fill="#C925D1" text-anchor="middle">async</text>
+<rect x="1370" y="130" width="315" height="650" rx="10" fill="#FFF6FA" stroke="#E7157B" stroke-width="2" stroke-dasharray="6 4"/>
+<text x="1384" y="152" font-family="Helvetica, Arial, sans-serif" font-size="14" font-weight="bold" fill="#E7157B" text-anchor="start">Regional services</text>
+<rect x="1388" y="165" width="280" height="60" rx="8" fill="#FFFFFF" stroke="#ED7100" stroke-width="1.6"/>
+<rect x="1388" y="165" width="7" height="60" rx="3" fill="#ED7100"/>
+<text x="1531.0" y="192.5" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#232F3E" text-anchor="middle">Amazon ECR</text>
+<text x="1531.0" y="207.5" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#5F6B7A" text-anchor="middle">immutable tags · scan on push</text>
+<rect x="1388" y="240" width="280" height="60" rx="8" fill="#FFFFFF" stroke="#DD344C" stroke-width="1.6"/>
+<rect x="1388" y="240" width="7" height="60" rx="3" fill="#DD344C"/>
+<text x="1531.0" y="267.5" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#232F3E" text-anchor="middle">Secrets Manager</text>
+<text x="1531.0" y="282.5" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#5F6B7A" text-anchor="middle">RDS-managed, rotated secret</text>
+<rect x="1388" y="315" width="280" height="60" rx="8" fill="#FFFFFF" stroke="#DD344C" stroke-width="1.6"/>
+<rect x="1388" y="315" width="7" height="60" rx="3" fill="#DD344C"/>
+<text x="1531.0" y="342.5" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#232F3E" text-anchor="middle">AWS KMS</text>
+<text x="1531.0" y="357.5" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#5F6B7A" text-anchor="middle">CMK per environment</text>
+<rect x="1388" y="390" width="280" height="60" rx="8" fill="#FFFFFF" stroke="#E7157B" stroke-width="1.6"/>
+<rect x="1388" y="390" width="7" height="60" rx="3" fill="#E7157B"/>
+<text x="1531.0" y="417.5" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#232F3E" text-anchor="middle">CloudWatch</text>
+<text x="1531.0" y="432.5" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#5F6B7A" text-anchor="middle">logs · metrics · alarms · dashboard</text>
+<rect x="1388" y="465" width="280" height="60" rx="8" fill="#FFFFFF" stroke="#E7157B" stroke-width="1.6"/>
+<rect x="1388" y="465" width="7" height="60" rx="3" fill="#E7157B"/>
+<text x="1531.0" y="492.5" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#232F3E" text-anchor="middle">SNS → on-call</text>
+<text x="1531.0" y="507.5" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#5F6B7A" text-anchor="middle">alarm notifications</text>
+<rect x="1388" y="540" width="280" height="60" rx="8" fill="#FFFFFF" stroke="#7AA116" stroke-width="1.6"/>
+<rect x="1388" y="540" width="7" height="60" rx="3" fill="#7AA116"/>
+<text x="1531.0" y="567.5" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#232F3E" text-anchor="middle">Amazon S3</text>
+<text x="1531.0" y="582.5" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#5F6B7A" text-anchor="middle">assets (SSE-KMS) · ALB logs</text>
+<rect x="1388" y="615" width="280" height="60" rx="8" fill="#FFFFFF" stroke="#E7157B" stroke-width="1.6"/>
+<rect x="1388" y="615" width="7" height="60" rx="3" fill="#E7157B"/>
+<text x="1531.0" y="642.5" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#232F3E" text-anchor="middle">CloudTrail · GuardDuty</text>
+<text x="1531.0" y="657.5" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#5F6B7A" text-anchor="middle">Security Hub · Config</text>
+<rect x="1388" y="690" width="280" height="60" rx="8" fill="#FFFFFF" stroke="#DD344C" stroke-width="1.6"/>
+<rect x="1388" y="690" width="7" height="60" rx="3" fill="#DD344C"/>
+<text x="1531.0" y="717.5" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#232F3E" text-anchor="middle">IAM</text>
+<text x="1531.0" y="732.5" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#5F6B7A" text-anchor="middle">task roles · OIDC deploy roles</text>
+<rect x="450" y="805" width="1235" height="205" rx="10" fill="#FFF6FA" stroke="#E7157B" stroke-width="2" stroke-dasharray="6 4"/>
+<text x="480" y="950" font-family="Helvetica, Arial, sans-serif" font-size="14" font-weight="bold" fill="#E7157B" text-anchor="start">Event-driven and scheduled work: stays serverless</text>
+<rect x="480" y="855" width="190" height="64" rx="8" fill="#FFFFFF" stroke="#E7157B" stroke-width="1.6"/>
+<rect x="480" y="855" width="7" height="64" rx="3" fill="#E7157B"/>
+<text x="578.0" y="884.5" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#232F3E" text-anchor="middle">Outbox relay</text>
+<text x="578.0" y="899.5" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#5F6B7A" text-anchor="middle">order events (same txn)</text>
+<rect x="720" y="855" width="190" height="64" rx="8" fill="#FFFFFF" stroke="#E7157B" stroke-width="1.6"/>
+<rect x="720" y="855" width="7" height="64" rx="3" fill="#E7157B"/>
+<text x="818.0" y="884.5" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#232F3E" text-anchor="middle">Amazon SQS</text>
+<text x="818.0" y="899.5" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#5F6B7A" text-anchor="middle">orders-events + DLQ</text>
+<rect x="960" y="855" width="220" height="64" rx="8" fill="#FFFFFF" stroke="#ED7100" stroke-width="1.6"/>
+<rect x="960" y="855" width="7" height="64" rx="3" fill="#ED7100"/>
+<text x="1073.0" y="884.5" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#232F3E" text-anchor="middle">AWS Lambda workers</text>
+<text x="1073.0" y="899.5" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#5F6B7A" text-anchor="middle">email · invoice PDF · webhooks</text>
+<rect x="1230" y="855" width="200" height="64" rx="8" fill="#FFFFFF" stroke="#E7157B" stroke-width="1.6"/>
+<rect x="1230" y="855" width="7" height="64" rx="3" fill="#E7157B"/>
+<text x="1333.0" y="884.5" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#232F3E" text-anchor="middle">EventBridge Scheduler</text>
+<text x="1333.0" y="899.5" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#5F6B7A" text-anchor="middle">reconciliation · cleanup</text>
+<rect x="1460" y="855" width="200" height="64" rx="8" fill="#FFFFFF" stroke="#ED7100" stroke-width="1.6"/>
+<rect x="1460" y="855" width="7" height="64" rx="3" fill="#ED7100"/>
+<text x="1563.0" y="884.5" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#232F3E" text-anchor="middle">AWS Lambda</text>
+<text x="1563.0" y="899.5" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#5F6B7A" text-anchor="middle">scheduled jobs</text>
+<path d="M670,887 L720,887" fill="none" stroke="#E7157B" stroke-width="2.2" stroke-dasharray="6 4" marker-end="url(#async)"/>
+<path d="M910,887 L960,887" fill="none" stroke="#E7157B" stroke-width="2.2" stroke-dasharray="6 4" marker-end="url(#async)"/>
+<path d="M1430,887 L1460,887" fill="none" stroke="#E7157B" stroke-width="2.2" stroke-dasharray="6 4" marker-end="url(#async)"/>
+<text x="480" y="973" font-family="Helvetica, Arial, sans-serif" font-size="12" font-weight="normal" fill="#5F6B7A" text-anchor="start">Spiky, asynchronous, short-lived work: scales to zero, retries + DLQ built in, never slows the API.</text>
+<text x="480" y="993" font-family="Helvetica, Arial, sans-serif" font-size="12" font-weight="normal" fill="#5F6B7A" text-anchor="start">Workers and jobs reach PostgreSQL only through RDS Proxy (reserved concurrency caps DB pressure).</text>
+<path d="M190,140 L226,140 L226,199 L255,199" fill="none" stroke="#0972D3" stroke-width="2.2" marker-end="url(#req)"/>
+<path d="M110,184 L110,274 L255,274" fill="none" stroke="#0972D3" stroke-width="2.2" marker-end="url(#req)"/>
+<text x="150" y="266" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="bold" fill="#0972D3" text-anchor="middle">HTTPS</text>
+<path d="M415,274 L438,274 L438,125 L815.0,125" fill="none" stroke="#0972D3" stroke-width="2.2" marker-end="url(#req)"/>
+<path d="M900.0,148 L900.0,222" fill="none" stroke="#0972D3" stroke-width="2.2" marker-end="url(#req)"/>
+<path d="M530,276 L530,402" fill="none" stroke="#0972D3" stroke-width="2.2" marker-end="url(#req)"/>
+<path d="M530,464 L530,592" fill="none" stroke="#0972D3" stroke-width="2.2" marker-end="url(#req)"/>
+<path d="M825,276 L825,402" fill="none" stroke="#0972D3" stroke-width="2.2" marker-end="url(#req)"/>
+<path d="M825,464 L825,592" fill="none" stroke="#0972D3" stroke-width="2.2" marker-end="url(#req)"/>
+<path d="M1120,276 L1120,402" fill="none" stroke="#0972D3" stroke-width="2.2" marker-end="url(#req)"/>
+<path d="M1120,464 L1120,592" fill="none" stroke="#0972D3" stroke-width="2.2" marker-end="url(#req)"/>
+<path d="M610,638 L610,658" fill="none" stroke="#0972D3" stroke-width="2.2" marker-end="url(#req)"/>
+<path d="M1330,516 L1360,516 L1360,532 L1372,532" fill="none" stroke="#8D99A8" stroke-width="2.2" stroke-dasharray="3 4" marker-end="url(#mgmt)"/>
+<rect x="250" y="860" width="185" height="106" rx="8" fill="#FFFFFF" stroke="#3B48CC" stroke-width="1.6"/>
+<rect x="250" y="860" width="7" height="106" rx="3" fill="#3B48CC"/>
+<text x="345.5" y="903.0" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold" fill="#232F3E" text-anchor="middle">Deploy into the account</text>
+<text x="345.5" y="918.0" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#5F6B7A" text-anchor="middle">ECR push · terraform apply</text>
+<text x="345.5" y="933.0" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#5F6B7A" text-anchor="middle">ECS deploy + migration task</text>
+<path d="M195,913 L250,913" fill="none" stroke="#8D99A8" stroke-width="2.2" stroke-dasharray="3 4" marker-end="url(#mgmt)"/>
+<path d="M825,780 L825,827 L575,827 L575,855" fill="none" stroke="#E7157B" stroke-width="2.2" stroke-dasharray="6 4" marker-end="url(#async)"/>
+<line x1="30" y1="1060" x2="70" y2="1060" stroke="#0972D3" stroke-width="2.2" marker-end="url(#req)"/>
+<text x="78" y="1064" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#232F3E" text-anchor="start">request path</text>
+<line x1="30" y1="1080" x2="70" y2="1080" stroke="#E7157B" stroke-width="2.2" stroke-dasharray="6 4" marker-end="url(#async)"/>
+<text x="78" y="1084" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#232F3E" text-anchor="start">async / events</text>
+<line x1="30" y1="1100" x2="70" y2="1100" stroke="#8D99A8" stroke-width="2.2" stroke-dasharray="3 4" marker-end="url(#mgmt)"/>
+<text x="78" y="1104" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#232F3E" text-anchor="start">control plane / AWS APIs</text>
+<text x="484" y="210" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="bold" fill="#7AA116" text-anchor="start" stroke="#EAF7EA" stroke-width="5" stroke-linejoin="round" paint-order="stroke">Public subnets /24</text>
+<text x="484" y="372" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="bold" fill="#0972D3" text-anchor="start" stroke="#EAF3FC" stroke-width="5" stroke-linejoin="round" paint-order="stroke">Private app subnets /20</text>
+<text x="484" y="584" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="bold" fill="#C925D1" text-anchor="start" stroke="#FBEAFB" stroke-width="5" stroke-linejoin="round" paint-order="stroke">Private data subnets /24 (no internet route)</text>
+<text x="960.0" y="390" font-family="Helvetica, Arial, sans-serif" font-size="12" font-weight="bold" fill="#ED7100" text-anchor="middle" stroke="#EAF3FC" stroke-width="5" stroke-linejoin="round" paint-order="stroke">ECS Fargate service · Graviton · 3–30 tasks · auto scaling (CPU + requests) · circuit-breaker rollback</text>
+<text x="900.0" y="552" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="normal" fill="#5F6B7A" text-anchor="middle" stroke="#EAF3FC" stroke-width="5" stroke-linejoin="round" paint-order="stroke" font-style="italic">Legacy Lambda (migration only) and async Lambdas also run in these subnets; they reach the DB only via RDS Proxy</text>
+<text x="208" y="132" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="bold" fill="#0972D3" text-anchor="middle" stroke="#FFFFFF" stroke-width="5" stroke-linejoin="round" paint-order="stroke">DNS</text>
+<text x="700" y="821" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="bold" fill="#E7157B" text-anchor="middle" stroke="#FFF6FA" stroke-width="5" stroke-linejoin="round" paint-order="stroke">order events (outbox)</text>
+</svg>

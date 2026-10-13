@@ -1,0 +1,193 @@
+# Continuous integration: every pull request, and every push to main via deploy.yml,
+# so nothing reaches AWS without passing these gates.
+#
+#   app        lint -> unit/integration tests (real PostgreSQL) -> migration check -> dependency audit
+#   docker     Dockerfile lint -> build -> image vulnerability scan -> docker compose smoke test
+#   terraform  fmt -> validate -> terraform test (mocked AWS) -> tflint -> Checkov
+#   secrets    gitleaks over the full history
+name: CI
+
+# Pushes to main run these same jobs through deploy.yml (workflow_call), which then
+# builds and deploys only if they pass.
+on:
+  pull_request:
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  PYTHON_VERSION: "3.13"
+  TERRAFORM_VERSION: "1.16.5"
+
+jobs:
+  app:
+    name: App · lint, test, audit
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: app
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: orders
+          POSTGRES_PASSWORD: ci-only-not-a-secret
+          POSTGRES_DB: orders_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U orders -d orders_test"
+          --health-interval 5s --health-timeout 3s --health-retries 10
+    env:
+      DATABASE_URL: postgresql+psycopg://orders:ci-only-not-a-secret@localhost:5432/orders_test
+      TEST_DATABASE_URL: postgresql+psycopg://orders:ci-only-not-a-secret@localhost:5432/orders_test
+      DB_SSLMODE: disable
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: app/requirements*.txt
+
+      - name: Install dependencies (hash-checked)
+        run: |
+          pip install --require-hashes -r requirements.txt
+          pip install -r requirements-dev.txt
+
+      - name: Lint and format check
+        run: |
+          ruff check --output-format=github .
+          ruff format --check .
+
+      - name: Migrations apply, match the models, and roll back
+        run: |
+          alembic upgrade head
+          alembic check
+          alembic downgrade base
+
+      - name: Tests (PostgreSQL) with coverage gate
+        run: pytest --cov --cov-report=term --cov-report=xml --junitxml=junit.xml
+
+      - name: Dependency vulnerability audit
+        run: pip-audit --requirement requirements.txt --require-hashes --strict
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: |
+            app/junit.xml
+            app/coverage.xml
+          retention-days: 14
+
+  docker:
+    name: Docker · build, scan, smoke test
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Lint Dockerfile
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: docker/Dockerfile
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build image
+        uses: docker/build-push-action@v6
+        with:
+          context: app
+          file: docker/Dockerfile
+          load: true
+          tags: orders-api:local
+          build-args: |
+            APP_VERSION=${{ github.sha }}
+            VCS_REF=${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Scan image (fail on fixable HIGH/CRITICAL)
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          image-ref: orders-api:local
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: "1"
+          format: table
+
+      - name: Smoke test with docker compose
+        run: |
+          docker compose -f docker/docker-compose.yml up -d --no-build --wait --wait-timeout 120
+          ./scripts/smoke-test.sh http://localhost:8000
+
+      - name: Container logs
+        if: always()
+        run: docker compose -f docker/docker-compose.yml logs --no-color
+
+      - name: Tear down
+        if: always()
+        run: docker compose -f docker/docker-compose.yml down -v
+
+  terraform:
+    name: Terraform · fmt, validate, test, lint, scan
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: terraform
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+          terraform_wrapper: false
+
+      - name: Format
+        run: terraform fmt -check -recursive -diff
+
+      - name: Validate (environment stack and bootstrap)
+        run: |
+          terraform init -backend=false -input=false
+          terraform validate
+          terraform -chdir=bootstrap init -backend=false -input=false
+          terraform -chdir=bootstrap validate
+
+      - name: Terraform tests (mocked AWS provider, all environments)
+        run: terraform test
+
+      - uses: terraform-linters/setup-tflint@v4
+
+      - name: TFLint
+        run: |
+          tflint --init
+          tflint --recursive --config "$GITHUB_WORKSPACE/terraform/.tflint.hcl"
+
+      - name: Checkov (IaC security scan)
+        uses: bridgecrewio/checkov-action@v12
+        with:
+          directory: terraform
+          framework: terraform
+          quiet: true
+          soft_fail: false
+
+  secrets:
+    name: Secret scan
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: gitleaks
+        run: |
+          docker run --rm -v "$PWD:/repo" ghcr.io/gitleaks/gitleaks:v8.28.0 \
+            git /repo --redact --verbose --exit-code 1

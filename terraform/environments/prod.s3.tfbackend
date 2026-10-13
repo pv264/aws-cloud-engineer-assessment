@@ -1,0 +1,8 @@
+# terraform init -reconfigure -backend-config=environments/prod.s3.tfbackend
+# One state file per environment (and, ideally, one AWS account per environment).
+# The bucket is created once per account by ../bootstrap.
+bucket       = "xyzz-orders-tfstate-333333333333"
+key          = "orders-platform/prod/terraform.tfstate"
+region       = "us-east-1"
+encrypt      = true
+use_lockfile = true # native S3 locking (conditional writes); replaces the DynamoDB lock table

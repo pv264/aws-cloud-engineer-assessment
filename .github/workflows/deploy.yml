@@ -1,0 +1,136 @@
+# Continuous delivery: main -> dev -> staging -> prod (manual approval).
+#
+#   CI gates -> build ONE multi-arch image (tag = git SHA, immutable) -> push to ECR
+#     -> dev -> staging -> prod   (the same image digest is promoted; never rebuilt)
+#
+# Rollback / redeploy of a known-good version: run this workflow manually with
+# `image_tag` set to a previous git SHA. CI and the build are skipped and that image is
+# promoted through the environments again (prod still requires approval).
+#
+# Repository variables (Settings > Secrets and variables > Actions > Variables):
+#   AWS_REGION         e.g. us-east-1
+#   AWS_ACCOUNT_IDS    JSON map, e.g. {"tooling":"000000000000","dev":"111111111111","staging":"222222222222","prod":"333333333333"}
+#   ECR_REPOSITORY     e.g. 000000000000.dkr.ecr.us-east-1.amazonaws.com/xyzz-orders-api
+# No AWS keys are stored anywhere: every job assumes an IAM role through GitHub OIDC.
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: "Redeploy an existing image tag (git SHA), e.g. to roll back. Leave empty to build HEAD."
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+# Deployments are serialized and never cancelled half-way.
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  ci:
+    if: inputs.image_tag == ''
+    uses: ./.github/workflows/ci.yml
+
+  build:
+    name: Build & push image
+    needs: ci
+    if: inputs.image_tag == '' && vars.AWS_DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      id-token: write
+    outputs:
+      image: ${{ steps.image.outputs.image }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: aws-actions/configure-aws-credentials@v5
+        with:
+          role-to-assume: arn:aws:iam::${{ fromJSON(vars.AWS_ACCOUNT_IDS).tooling }}:role/xyzz-orders-gha-ci
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - uses: aws-actions/amazon-ecr-login@v2
+
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build and push (linux/amd64 + linux/arm64)
+        id: push
+        uses: docker/build-push-action@v6
+        with:
+          context: app
+          file: docker/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ vars.ECR_REPOSITORY }}:${{ github.sha }}
+          build-args: |
+            APP_VERSION=${{ github.sha }}
+            VCS_REF=${{ github.sha }}
+          provenance: mode=max
+          sbom: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Image reference (pinned by digest)
+        id: image
+        run: echo "image=${{ vars.ECR_REPOSITORY }}:${{ github.sha }}@${{ steps.push.outputs.digest }}" >> "$GITHUB_OUTPUT"
+
+  resolve:
+    name: Resolve image
+    needs: build
+    if: ${{ !failure() && !cancelled() && vars.AWS_DEPLOY_ENABLED == 'true' }}
+    runs-on: ubuntu-24.04
+    outputs:
+      image: ${{ steps.resolve.outputs.image }}
+    steps:
+      - id: resolve
+        env:
+          BUILT: ${{ needs.build.outputs.image }}
+          REQUESTED: ${{ inputs.image_tag }}
+          REPOSITORY: ${{ vars.ECR_REPOSITORY }}
+        run: |
+          if [ -n "$REQUESTED" ]; then
+            echo "image=${REPOSITORY}:${REQUESTED}" >> "$GITHUB_OUTPUT"
+          else
+            echo "image=${BUILT}" >> "$GITHUB_OUTPUT"
+          fi
+
+  dev:
+    needs: resolve
+    if: ${{ !failure() && !cancelled() && vars.AWS_DEPLOY_ENABLED == 'true' }}
+    uses: ./.github/workflows/deploy-environment.yml
+    permissions:
+      contents: read
+      id-token: write
+    with:
+      environment: dev
+      image: ${{ needs.resolve.outputs.image }}
+
+  staging:
+    needs: [resolve, dev]
+    if: ${{ !failure() && !cancelled() && vars.AWS_DEPLOY_ENABLED == 'true' }}
+    uses: ./.github/workflows/deploy-environment.yml
+    permissions:
+      contents: read
+      id-token: write
+    with:
+      environment: staging
+      image: ${{ needs.resolve.outputs.image }}
+
+  prod:
+    needs: [resolve, staging]
+    if: ${{ !failure() && !cancelled() && vars.AWS_DEPLOY_ENABLED == 'true' }}
+    uses: ./.github/workflows/deploy-environment.yml
+    permissions:
+      contents: read
+      id-token: write
+    with:
+      environment: prod
+      image: ${{ needs.resolve.outputs.image }}

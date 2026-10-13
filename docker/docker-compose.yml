@@ -1,0 +1,87 @@
+# Local development stack: PostgreSQL + one-off schema migration + the API.
+#
+#   docker compose -f docker/docker-compose.yml up --build    (from the repo root)
+#   docker compose up --build                                  (from the repo root, via compose.yaml)
+#
+# Then: http://localhost:8000/docs
+#
+# DB_PASSWORD has a default ONLY so `docker compose up` works out of the box against a
+# throwaway local container whose port is bound to 127.0.0.1. It is not a real secret
+# and is never used anywhere else: in AWS the password lives in Secrets Manager.
+# Override it with a git-ignored docker/.env file (see .env.example).
+
+name: orders-api
+
+x-db-env: &db-env
+  DB_HOST: db
+  DB_PORT: "5432"
+  DB_NAME: ${DB_NAME:-orders}
+  DB_USER: ${DB_USER:-orders}
+  DB_PASSWORD: ${DB_PASSWORD:-local-dev-only}
+  DB_SSLMODE: disable
+
+x-hardening: &hardening
+  read_only: true
+  tmpfs:
+    - /tmp
+  security_opt:
+    - no-new-privileges:true
+  cap_drop:
+    - ALL
+
+services:
+  db:
+    image: postgres:17-alpine@sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24
+    environment:
+      POSTGRES_DB: ${DB_NAME:-orders}
+      POSTGRES_USER: ${DB_USER:-orders}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-local-dev-only}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  # Same image, different command: exactly how migrations run on ECS (one-off task).
+  migrate:
+    image: orders-api:local
+    build:
+      context: ../app
+      dockerfile: ../docker/Dockerfile
+      args:
+        APP_VERSION: local
+    command: ["alembic", "upgrade", "head"]
+    environment:
+      <<: *db-env
+      APP_ENV: local
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+    <<: *hardening
+
+  api:
+    image: orders-api:local
+    environment:
+      <<: *db-env
+      APP_ENV: local
+      APP_VERSION: local
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      WEB_CONCURRENCY: "2"
+      REQUIRE_IDEMPOTENCY_KEY: ${REQUIRE_IDEMPOTENCY_KEY:-false}
+    ports:
+      - "${API_PORT:-8000}:8000"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+    stop_grace_period: 30s
+    <<: *hardening
+
+volumes:
+  db-data:

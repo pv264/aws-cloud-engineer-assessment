@@ -1,0 +1,8 @@
+# Build context is ./app; only runtime files are needed (allow-list style).
+*
+!requirements.txt
+!alembic.ini
+!migrations/
+!orders_api/
+**/__pycache__
+**/*.pyc

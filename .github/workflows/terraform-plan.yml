@@ -1,0 +1,71 @@
+# Terraform plan for every environment:
+#   - on pull requests that touch terraform/ (plan shown in the job summary for review)
+#   - daily, as drift detection: exit code 2 (changes present) fails the run and alerts
+# Uses the read-only plan role; never applies.
+name: Terraform plan
+
+on:
+  pull_request:
+    paths: ["terraform/**", ".github/workflows/terraform-plan.yml"]
+  schedule:
+    - cron: "17 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  plan:
+    name: plan · ${{ matrix.environment }}
+    # OIDC tokens are not issued to pull requests from forks.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        environment: [dev, staging, prod]
+    env:
+      NAME: xyzz-orders-${{ matrix.environment }}
+    defaults:
+      run:
+        working-directory: terraform
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: aws-actions/configure-aws-credentials@v5
+        with:
+          role-to-assume: arn:aws:iam::${{ fromJSON(vars.AWS_ACCOUNT_IDS)[matrix.environment] }}:role/xyzz-orders-gha-plan
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.16.5"
+          terraform_wrapper: false
+
+      - name: Plan against the currently deployed image
+        env:
+          ENVIRONMENT: ${{ matrix.environment }}
+        run: |
+          # Plan with the image that is running now, so the plan shows infrastructure
+          # changes only (releases are rolled out by deploy.yml).
+          image=$(aws ecs describe-task-definition --task-definition "$NAME" \
+            --query 'taskDefinition.containerDefinitions[0].image' --output text)
+          terraform init -input=false -backend-config="environments/${ENVIRONMENT}.s3.tfbackend"
+          set +e
+          terraform plan -input=false -lock=false -detailed-exitcode -no-color \
+            -var-file="environments/${ENVIRONMENT}.tfvars" -var="container_image=${image}" > plan.txt
+          code=$?
+          set -e
+          {
+            echo "### ${ENVIRONMENT}: $( [ $code -eq 0 ] && echo 'no changes' || echo 'changes' )"
+            echo '```'
+            tail -c 60000 plan.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ $code -eq 1 ]; then exit 1; fi
+          if [ $code -eq 2 ] && [ "$GITHUB_EVENT_NAME" = "schedule" ]; then
+            echo "::error::Drift detected in ${ENVIRONMENT}: infrastructure differs from code."
+            exit 1
+          fi
