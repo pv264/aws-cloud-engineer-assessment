@@ -20,6 +20,13 @@ x-db-env: &db-env
   DB_PASSWORD: ${DB_PASSWORD:-local-dev-only}
   DB_SSLMODE: disable
 
+# Shared by migrate and api: both use the same image, so it is built once.
+x-app-build: &app-build
+  context: ../app
+  dockerfile: ../docker/Dockerfile
+  args:
+    APP_VERSION: local
+
 x-hardening: &hardening
   read_only: true
   tmpfs:
@@ -50,11 +57,7 @@ services:
   # Same image, different command: exactly how migrations run on ECS (one-off task).
   migrate:
     image: orders-api:local
-    build:
-      context: ../app
-      dockerfile: ../docker/Dockerfile
-      args:
-        APP_VERSION: local
+    build: *app-build
     command: ["alembic", "upgrade", "head"]
     environment:
       <<: *db-env
@@ -67,6 +70,7 @@ services:
 
   api:
     image: orders-api:local
+    build: *app-build
     environment:
       <<: *db-env
       APP_ENV: local
